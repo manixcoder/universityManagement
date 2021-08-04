@@ -54,41 +54,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['admin', 'auth']], function 
 Route::group(['prefix' => 'university', 'middleware' => ['university', 'auth']], function () {
    
     Route::get('/', 'university\DashboardController@index');
-    /*
-    |---------------------------------
-    | Employee Management Routes Here    |
-    |---------------------------------
-     */
-    Route::group(['prefix' => 'student-management'], function () {
-        Route::get('/', 'University\EmployeeManagementController@index');
-        Route::get('employee-data', 'University\EmployeeManagementController@employeeData');
-        Route::get('create', 'University\EmployeeManagementController@create');
-        Route::post('/save-employee', 'University\EmployeeManagementController@store');
-        Route::get('{id}/edit', 'University\EmployeeManagementController@edit');
-
-        Route::post('{id}/update', 'University\EmployeeManagementController@update');
-        Route::get('delete/{id}', 'University\EmployeeManagementController@destroy');
-    });
 });
 
 
 /*=====================================Student=====================================*/
 Route::group(['prefix' => 'student', 'middleware' => ['student', 'auth']], function () {
-    return "Student";
     Route::get('/', 'Student\DashboardController@index');
-    /*
-    |---------------------------------
-    | Employee Management Routes Here    |
-    |---------------------------------
-     */
-    Route::group(['prefix' => 'employee-management'], function () {
-        Route::get('/', 'Student\EmployeeManagementController@index');
-        Route::get('employee-data', 'Student\EmployeeManagementController@employeeData');
-        Route::get('create', 'Student\EmployeeManagementController@create');
-        Route::post('/save-employee', 'Student\EmployeeManagementController@store');
-        Route::get('{id}/edit', 'Student\EmployeeManagementController@edit');
-
-        Route::post('{id}/update', 'Student\EmployeeManagementController@update');
-        Route::get('delete/{id}', 'Student\EmployeeManagementController@destroy');
-    });
 });
