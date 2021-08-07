@@ -53,11 +53,42 @@ Route::group(['prefix' => 'admin', 'middleware' => ['admin', 'auth']], function 
 /*=====================================University=====================================*/
 Route::group(['prefix' => 'university', 'middleware' => ['university', 'auth']], function () {
    
-    Route::get('/', 'university\DashboardController@index');
+    Route::get('/', 'University\DashboardController@index');
+    /*
+    |---------------------------------
+    | Employee Management Routes Here    |
+    |---------------------------------
+     */
+    Route::group(['prefix' => 'student-management'], function () {
+        Route::get('/', 'University\StudentManagementController@index');
+        Route::get('student-data', 'University\StudentManagementController@studentData');
+        Route::get('create', 'University\StudentManagementController@create');
+        Route::post('/save-student', 'University\StudentManagementController@store');
+        Route::get('{id}/edit', 'University\StudentManagementController@edit');
+
+        Route::post('{id}/update', 'University\StudentManagementController@update');
+        Route::get('delete/{id}', 'University\StudentManagementController@destroy');
+    });
 });
 
 
 /*=====================================Student=====================================*/
 Route::group(['prefix' => 'student', 'middleware' => ['student', 'auth']], function () {
+    return "Student";
     Route::get('/', 'Student\DashboardController@index');
+    /*
+    |---------------------------------
+    | Employee Management Routes Here    |
+    |---------------------------------
+     */
+    Route::group(['prefix' => 'employee-management'], function () {
+        Route::get('/', 'Student\EmployeeManagementController@index');
+        Route::get('employee-data', 'Student\EmployeeManagementController@employeeData');
+        Route::get('create', 'Student\EmployeeManagementController@create');
+        Route::post('/save-employee', 'Student\EmployeeManagementController@store');
+        Route::get('{id}/edit', 'Student\EmployeeManagementController@edit');
+
+        Route::post('{id}/update', 'Student\EmployeeManagementController@update');
+        Route::get('delete/{id}', 'Student\EmployeeManagementController@destroy');
+    });
 });

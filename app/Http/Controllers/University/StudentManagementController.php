@@ -9,6 +9,7 @@ use Yajra\Datatables\Datatables;
 use Validator;
 use App\User;
 use Crypt;
+use Illuminate\Support\Facades\Auth;
 
 class StudentManagementController extends Controller
 {
@@ -34,7 +35,8 @@ class StudentManagementController extends Controller
      */
     public function create()
     {
-        //
+        $data = array();
+        return view('university.student.create', $data);
     }
 
     /**
@@ -45,7 +47,41 @@ class StudentManagementController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'firstName'         =>  'required',
+            'lastName'          =>  'required',
+            'name'              => 'required|max:255|min:2|unique:users',
+            'email'             => 'required|email|max:255|unique:users',
+            'phone'             =>  'required',
+        ]);
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+        try {
+
+            $studentData =  User::create([
+                'firstName'      => $request->firstName,
+                'lastName'       => $request->lastName,
+                'name'           => $request->name,
+                'email'          => $request->email,
+                "password"       => bcrypt($request->password),
+                'phone'          => $request->phone,
+                'university_id'     => Auth::user()->id,
+            ]);
+
+            $roleArray = array(
+                'user_id' => $studentData->id,
+                'role_id' => 3, // student
+            );
+            UserRoleRelation::insert($roleArray);
+            $user = User::where('id', $studentData->id)
+                ->first();
+
+            return redirect('/university/student-management')->with(array('status' => 'success', 'message' => 'New Student Successfully created!'));
+        } catch (\Exception $e) {
+            //return back()->with(array('status' => 'danger', 'message' =>  $e->getMessage()));
+            return back()->with(array('status' => 'danger', 'message' =>  'Something went wrong. Please try again later.'));
+        }
     }
 
     /**
@@ -67,7 +103,16 @@ class StudentManagementController extends Controller
      */
     public function edit($id)
     {
-        //
+        try {
+            $studentData = User::find(\Crypt::decrypt($id));
+            if ($studentData) {
+                $data['studentData'] = $studentData;
+
+                return view('university.student.edit', $data);
+            }
+        } catch (\Exception $e) {
+            return back()->with(array('status' => 'danger', 'message' => $e->getMessage()));
+        }
     }
 
     /**
@@ -79,17 +124,54 @@ class StudentManagementController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        // dd($request->all());
+        $validator = Validator::make($request->all(), array(
+            'firstName'     => 'required',
+            'lastName'      => 'required',
+            'name'          => 'required|max:255|min:2|unique:users,name,' . \Crypt::decrypt($id),
+            'email'         => 'required|min:2|unique:users,email,' . \Crypt::decrypt($id),
+            'phone'         => 'required',
+        ));
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+        try {
+            $companyData = User::find(\Crypt::decrypt($id));
+            $updateData = array(
+                "firstName"     => $request->has('firstName') ? $request->firstName : "",
+                "lastName"      => $request->has('lastName') ? $request->lastName : "",
+                "name"          => $request->has('name') ? $request->name : "",
+                "email"         => $request->has('email') ? $request->email : "",
+                "phone"         => $request->has('phone') ? $request->phone : "",
+            );
+            $companyData->update($updateData);
+            return redirect('/university/student-management')->with(array('status' => 'success', 'message' => 'Update record successfully.'));
+        } catch (\exception $e) {
+            return back()->with(array('status' => 'danger', 'message' => 'Some thing went wrong! Please try again later.'));
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      *
+     * @param  \App\Models\User  $User
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(User $User, $id)
     {
-        //
+        User::find(Crypt::decrypt($id))->delete();
+    }
+
+    public function studentData()
+    {
+        $result = User::where('university_id', Auth::user()->id)->get();
+        //   dd($result);
+        return Datatables::of($result)
+            ->addColumn('action', function ($result) {
+                return '<a href ="' . url('university/student-management') . '/' . Crypt::encrypt($result->id) . '/edit"  class="btn btn-xs btn-warning edit"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a>
+        <a data-id =' . Crypt::encrypt($result->id) . ' class="btn btn-xs btn-danger delete" style="color:#fff"><i class="fa fa-trash" aria-hidden="true"></i> Delete</a>';
+            })
+            ->make(true);
     }
 }

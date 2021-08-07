@@ -79,11 +79,11 @@
     </div>
 
     <!-- Navbar -->
-    @include('admin.includes.topbar')
+    @include('university.includes.topbar')
     <!-- /.navbar -->
 
     <!-- Main Sidebar Container -->
-    @include('admin.includes.sidebar')
+    @include('university.includes.sidebar')
 
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
