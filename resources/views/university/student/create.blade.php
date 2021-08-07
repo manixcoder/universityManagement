@@ -76,19 +76,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                
-                                <div class="form-group @error('university_id') has-danger @enderror">
-                                    <label>University</label>
-                                    <select class="form-control @error('university_id') form-control-danger @enderror" id="university_id"  name="university_id">
-                                        <option value="">Select University</option>
-                                        @foreach($university as $univ)
-                                        
-                                        <option value="{{$univ->id}}">{{$univ->name}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
+                           
                         </div>
                     </div>
                     <div class="form-actions">

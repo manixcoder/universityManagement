@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Companies;
+namespace App\Http\Controllers\University;
 
 use App\Http\Controllers\Controller;
 use App\User;
@@ -17,7 +17,7 @@ class DashboardController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(['auth', 'company']); 
+        $this->middleware(['auth','university']); 
     }
     public function index()
     {
@@ -26,7 +26,7 @@ class DashboardController extends Controller
                 $q->where('name', 'employee');
             })->get()->count();
        
-        return view('companies.dashboard.index')->with(
+        return view('university.dashboard.index')->with(
             array(
                 'employee_data' => $employee_data,
             )
