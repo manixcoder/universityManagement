@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\UserRoleRelation;
 use Yajra\Datatables\Datatables;
+use App\Notifications\UniversityRegitration;
 use Validator;
 use App\User;
 use Crypt;
@@ -15,7 +16,11 @@ class UniversityManagementController extends Controller
     public function __construct()
     {
         $this->middleware(['auth', 'admin']);
+        $this->admin = User::whereHas('roles', function($q){
+            $q->where('name', 'admin');
+        })->first();
     }
+    
     /**
      * Display a listing of the resource.
      *
@@ -92,6 +97,17 @@ class UniversityManagementController extends Controller
             UserRoleRelation::insert($roleArray);
             $user = User::where('id', $universityData->id)
                 ->first();
+                if ($universityData) {
+                    $notificationData = [
+                        "adminName" => $user[0]['name'],
+                        "username" => $request->name,
+                        "useremail" => $user[0]['email'],
+                        'userPhone' => $user[0]['phone'],
+                        "message" => "University register",
+                    ];
+                    //dd($notificationData);
+                    $this->admin->notify(new UniversityRegitration($notificationData));
+                 }
 
             return redirect('/admin/university-management')->with(array('status' => 'success', 'message' => 'New Company Successfully created!'));
         } catch (\Exception $e) {
@@ -139,6 +155,7 @@ class UniversityManagementController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // dd($request->all());
         $validator = Validator::make($request->all(), array(
             'name'          => 'required|max:255|min:2|unique:users,name,' . \Crypt::decrypt($id),
             'email'         => 'required|min:2|unique:users,email,' . \Crypt::decrypt($id),
@@ -149,16 +166,29 @@ class UniversityManagementController extends Controller
             return back()->withErrors($validator)->withInput();
         }
         try {
-            $companyData = User::find(\Crypt::decrypt($id));
+            $universityData = User::find(\Crypt::decrypt($id));
             $updateData = array(
                 "name" => $request->has('name') ? $request->name : "",
                 "email" => $request->has('email') ? $request->email : "",
 
             );
-            $companyData->update($updateData);
+            $universityData->update($updateData);
+            if ($request->logo != "") {
+                $uni_save = User::find(\Crypt::decrypt($id));
+                if ($uni_save->logo != "") {
+                    if (file_exists(public_path('/uploads/university_logo/' . $uni_save->logo))) {
+                        $del_previous_pic = unlink(public_path('/uploads/university_logo/' . $uni_save->logo));
+                    }
+                }
+                $file = $request->file('logo');
+                $filename = 'logo-' . time() . '.' . $file->getClientOriginalExtension();
+                $file->move('public/uploads/university_logo', $filename);
+                $uni_save->logo = $filename;
+                $uni_save->save();
+            }
             return redirect('/admin/university-management')->with(array('status' => 'success', 'message' => 'Update record successfully.'));
         } catch (\exception $e) {
-            //return back()->with(array('status' => 'danger', 'message' =>  $e->getMessage()));
+            return back()->with(array('status' => 'danger', 'message' =>  $e->getMessage()));
             return back()->with(array('status' => 'danger', 'message' => 'Some thing went wrong! Please try again later.'));
         }
     }

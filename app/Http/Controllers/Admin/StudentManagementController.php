@@ -177,8 +177,7 @@ class StudentManagementController extends Controller
             return back()->with(array('status' => 'danger', 'message' => 'Some thing went wrong! Please try again later.'));
         }
     }
-
-     /**
+    /**
      * Remove the specified resource from storage.
      *
      * @param  \App\Models\User  $User

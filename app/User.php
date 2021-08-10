@@ -30,8 +30,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at',
         'password',
         'university_id',
-
-
     ];
     /**
      * The attributes that should be hidden for arrays.
